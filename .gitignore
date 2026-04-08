@@ -25,3 +25,4 @@ yarn-error.log*
 /backend/target/
 /backend/uploads/
 /backend/.m2/
+/backend/.idea/
