@@ -15,4 +15,10 @@ public class AuthLoginRequestDto {
 
 	@NotBlank(message = "Password is required")
 	private String password;
+
+	@NotBlank(message = "Captcha id is required")
+	private String captchaId;
+
+	@NotBlank(message = "Captcha answer is required")
+	private String captchaAnswer;
 }

@@ -9,6 +9,7 @@ import com.eduvault.dto.AuthSignupRequestDto;
 import com.eduvault.entity.User;
 import com.eduvault.repository.UserRepository;
 import com.eduvault.service.AuthService;
+import com.eduvault.service.CaptchaService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,9 +19,12 @@ public class AuthServiceImpl implements AuthService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final CaptchaService captchaService;
 
 	@Override
 	public AuthResponseDto signup(AuthSignupRequestDto requestDto) {
+		captchaService.validateCaptcha(requestDto.getCaptchaId(), requestDto.getCaptchaAnswer());
+
 		String normalizedEmail = requestDto.getEmail().trim().toLowerCase();
 		if (userRepository.existsByEmail(normalizedEmail)) {
 			throw new IllegalArgumentException("Email is already registered");
@@ -38,6 +42,8 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public AuthResponseDto login(AuthLoginRequestDto requestDto) {
+		captchaService.validateCaptcha(requestDto.getCaptchaId(), requestDto.getCaptchaAnswer());
+
 		User user = userRepository.findByEmail(requestDto.getEmail().trim().toLowerCase())
 				.orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 

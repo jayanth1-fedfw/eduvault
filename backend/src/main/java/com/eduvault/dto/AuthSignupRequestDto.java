@@ -20,4 +20,10 @@ public class AuthSignupRequestDto {
 	@NotBlank(message = "Password is required")
 	@Size(min = 6, message = "Password must be at least 6 characters")
 	private String password;
+
+	@NotBlank(message = "Captcha id is required")
+	private String captchaId;
+
+	@NotBlank(message = "Captcha answer is required")
+	private String captchaAnswer;
 }

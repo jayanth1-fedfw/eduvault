@@ -85,6 +85,10 @@ export async function loginUser(payload) {
   });
 }
 
+export async function getCaptcha() {
+  return request("/auth/captcha");
+}
+
 export async function getResources() {
   const resources = await request("/resources");
   return Array.isArray(resources) ? resources.map(mapResource) : [];

@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: eduvault-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    rootDir: backend
+    disk:
+      name: uploads-disk
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+  - type: web
+    name: eduvault-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: REACT_APP_API_BASE_URL
+        sync: false

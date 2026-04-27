@@ -4,6 +4,7 @@ import {
   createResource,
   deleteResource,
   downloadResourceFile,
+  getCaptcha,
   getResourceById,
   getResources,
   loginUser,
@@ -84,8 +85,24 @@ function AuthPage({ onAuthSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [captcha, setCaptcha] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    loadCaptcha();
+  }, [mode]);
+
+  async function loadCaptcha() {
+    try {
+      const captchaPayload = await getCaptcha();
+      setCaptcha(captchaPayload);
+      setCaptchaAnswer("");
+    } catch (requestError) {
+      setError(requestError.message);
+    }
+  }
 
   async function submit() {
     setError("");
@@ -102,17 +119,22 @@ function AuthPage({ onAuthSuccess }) {
       setError("Passwords do not match.");
       return;
     }
+    if (!captchaAnswer || !captcha?.captchaId) {
+      setError("Please solve the captcha.");
+      return;
+    }
 
     setBusy(true);
     try {
       const payload =
         mode === "signup"
-          ? await signupUser({ name, email, password })
-          : await loginUser({ email, password });
+          ? await signupUser({ name, email, password, captchaId: captcha.captchaId, captchaAnswer })
+          : await loginUser({ email, password, captchaId: captcha.captchaId, captchaAnswer });
 
       onAuthSuccess(payload);
     } catch (requestError) {
       setError(requestError.message);
+      await loadCaptcha();
     } finally {
       setBusy(false);
     }
@@ -209,6 +231,36 @@ function AuthPage({ onAuthSuccess }) {
               <input type="password" placeholder="........" value={confirm} onChange={(event) => setConfirm(event.target.value)} />
             </div>
           )}
+
+          <div className="ig">
+            <label>Captcha</label>
+            <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+              <div
+                style={{
+                  flex: 1,
+                  padding: "12px 16px",
+                  borderRadius: 10,
+                  border: "1.5px solid #dde3ea",
+                  background: "#f3ede2",
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {captcha?.challengeText || "Loading..."}
+              </div>
+              <button type="button" className="btn bg" style={{ borderRadius: 10, padding: "0 14px", background: "#f3ede2" }} onClick={loadCaptcha}>
+                Refresh
+              </button>
+            </div>
+            <input
+              style={{ marginTop: 10 }}
+              placeholder="Enter captcha answer"
+              value={captchaAnswer}
+              onChange={(event) => setCaptchaAnswer(event.target.value)}
+            />
+          </div>
 
           {error && <div className="banner err">{error}</div>}
 
